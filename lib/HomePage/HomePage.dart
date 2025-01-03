@@ -3,11 +3,15 @@ import 'dart:convert';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as httpClient;
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../apilinks/allapi.dart';
 import 'Sections/Movies.dart';
 import 'Sections/Series.dart';
 import 'Sections/Upcoming.dart';
+import '../auth/signin_page.dart';
+import '../services/notification_service.dart';
+import '../profile/profile_page.dart';
 
 
 class HomePage extends StatefulWidget {
@@ -23,6 +27,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   bool isLoading = true;
   String errorMessage = '';
   late final httpClient.Client client;
+  final NotificationService _notificationService = NotificationService();
 
   @override
   void initState() {
@@ -120,6 +125,73 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     }
   }
 
+  Future<void> _handleLogout() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+      if (mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => SignInPage()),
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      print("Error during logout: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error logging out')),
+      );
+    }
+  }
+
+  Future<void> _showNewMoviesNotification() async {
+    await _notificationService.showNotification(
+      title: '🎬 New Movies This Week!',
+      body: 'Exciting new releases are waiting for you. Check them out now!',
+    );
+  }
+
+  Future<void> _showTrendingNotification() async {
+    await _notificationService.showNotification(
+      title: '🔥 Trending Now',
+      body: 'See what movies everyone is talking about today!',
+    );
+  }
+
+  Future<void> _showRecommendationNotification() async {
+    await _notificationService.showNotification(
+      title: '🎯 Recommended For You',
+      body: 'Based on your interests, we think you\'ll love these movies!',
+    );
+  }
+
+  Future<void> _scheduleUpcomingMoviesNotification() async {
+    final nextWeek = DateTime.now().add(Duration(days: 7));
+    await _notificationService.scheduleNotification(
+      title: '🎦 Coming Next Week',
+      body: 'Get ready for amazing new releases coming to theaters!',
+      scheduledDate: nextWeek,
+    );
+  }
+
+  Future<void> _showDailyPickNotification() async {
+    await _notificationService.showNotification(
+      title: '⭐ Today\'s Movie Pick',
+      body: 'We\'ve picked a special movie just for you today!',
+    );
+  }
+
+  Future<void> _scheduleWeekendNotification() async {
+    final saturday = DateTime.now().add(
+      Duration(
+        days: (DateTime.saturday - DateTime.now().weekday + 7) % 7,
+      ),
+    );
+    await _notificationService.scheduleNotification(
+      title: '🍿 Weekend Movie Marathon',
+      body: 'Perfect movies for your weekend entertainment!',
+      scheduledDate: saturday,
+    );
+  }
+
   get http => null;
 
   @override
@@ -133,6 +205,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             toolbarHeight: 60,
             pinned: true,
             expandedHeight: MediaQuery.of(context).size.height * 0.5,
+            leading: IconButton(
+              icon: Icon(Icons.account_circle, size: 30),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ProfilePage()),
+                );
+              },
+            ),
             actions: [
               Row(
                 children: [
@@ -152,6 +233,93 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       style: TextStyle(
                         color: uval == 2 ? Colors.red : Colors.white,
                       ),
+                    ),
+                  ),
+                ],
+              ),
+              PopupMenuButton<String>(
+                icon: Icon(Icons.notifications),
+                onSelected: (String value) {
+                  switch (value) {
+                    case 'new':
+                      _showNewMoviesNotification();
+                      break;
+                    case 'trending':
+                      _showTrendingNotification();
+                      break;
+                    case 'recommend':
+                      _showRecommendationNotification();
+                      break;
+                    case 'upcoming':
+                      _scheduleUpcomingMoviesNotification();
+                      break;
+                    case 'daily':
+                      _showDailyPickNotification();
+                      break;
+                    case 'weekend':
+                      _scheduleWeekendNotification();
+                      break;
+                  }
+                },
+                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                  PopupMenuItem<String>(
+                    value: 'new',
+                    child: Row(
+                      children: [
+                        Icon(Icons.new_releases, color: Colors.blue),
+                        SizedBox(width: 8),
+                        Text('New Movies'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'trending',
+                    child: Row(
+                      children: [
+                        Icon(Icons.trending_up, color: Colors.red),
+                        SizedBox(width: 8),
+                        Text('Trending Now'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'recommend',
+                    child: Row(
+                      children: [
+                        Icon(Icons.recommend, color: Colors.green),
+                        SizedBox(width: 8),
+                        Text('Recommendations'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'upcoming',
+                    child: Row(
+                      children: [
+                        Icon(Icons.movie_filter, color: Colors.purple),
+                        SizedBox(width: 8),
+                        Text('Coming Soon'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'daily',
+                    child: Row(
+                      children: [
+                        Icon(Icons.star, color: Colors.amber),
+                        SizedBox(width: 8),
+                        Text('Daily Pick'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'weekend',
+                    child: Row(
+                      children: [
+                        Icon(Icons.weekend, color: Colors.orange),
+                        SizedBox(width: 8),
+                        Text('Weekend Special'),
+                      ],
                     ),
                   ),
                 ],
