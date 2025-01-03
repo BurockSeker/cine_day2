@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "970550088606",
+    "project_id": "cineday-aa004",
+    "storage_bucket": "cineday-aa004.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:970550088606:android:88bb60cb25b6e2ec227c8f",
+        "android_client_info": {
+          "package_name": "com.example.cine_day2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB8NJnMk5y29dOt5IJLYlJq7pp-m1vtNdg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:970550088606:android:a7fa3077c10afc14227c8f",
+        "android_client_info": {
+          "package_name": "com.example.movie_recommender"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB8NJnMk5y29dOt5IJLYlJq7pp-m1vtNdg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
